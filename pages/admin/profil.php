@@ -17,25 +17,26 @@ if (isset($_POST['update'])) {
     } else {
         $foto_baru = $user['foto'];
         if (isset($_FILES['foto']) && $_FILES['foto']['error']===0) {
-            $file=$_FILES['foto'];
-            $ext=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));
-            if (in_array($ext,['jpg','jpeg','png']) && $file['size']<=2*1024*1024) {
-                $foto_baru='foto_'.$admin_id.'_'.time().'.'.$ext;
-                move_uploaded_file($file['tmp_name'],'../../uploads/foto_profil/'.$foto_baru);
-            } else { $error="Format JPG/PNG maks 2MB!"; }
+            $file = $_FILES['foto'];
+            $ext  = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, ['jpg','jpeg','png']) && $file['size'] <= 2*1024*1024) {
+                $foto_baru = 'foto_' . $admin_id . '_' . time() . '.' . $ext;
+                // ✅ FIX: pakai BASE_PATH
+                move_uploaded_file($file['tmp_name'], BASE_PATH . '/uploads/foto_profil/' . $foto_baru);
+            } else { $error = "Format JPG/PNG maks 2MB!"; }
         }
         if (!$error) {
-            $pass_sql="";
+            $pass_sql = "";
             if (!empty($_POST['password_baru'])) {
-                if(strlen($_POST['password_baru'])<6){ $error="Password min 6 karakter!"; }
-                else { $pass_sql=", password='".MD5($_POST['password_baru'])."'"; }
+                if (strlen($_POST['password_baru']) < 6) { $error = "Password min 6 karakter!"; }
+                else { $pass_sql = ", password='".MD5($_POST['password_baru'])."'"; }
             }
             if (!$error) {
-                mysqli_query($conn,"UPDATE users SET nama='$nama',email='$email',foto='$foto_baru' $pass_sql WHERE id=$admin_id");
-                $_SESSION['user_nama']=$nama;
-                $_SESSION['user_foto']=$foto_baru;
-                $success="Profil berhasil diperbarui!";
-                $user=mysqli_fetch_assoc(mysqli_query($conn,"SELECT * FROM users WHERE id=$admin_id"));
+                mysqli_query($conn, "UPDATE users SET nama='$nama', email='$email', foto='$foto_baru' $pass_sql WHERE id=$admin_id");
+                $_SESSION['user_nama'] = $nama;
+                $_SESSION['user_foto'] = $foto_baru;
+                $success = "Profil berhasil diperbarui!";
+                $user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE id=$admin_id"));
             }
         }
     }
@@ -83,8 +84,10 @@ if (isset($_POST['update'])) {
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
                     <div class="foto-area">
-                        <?php if($user['foto'] && file_exists('../../uploads/foto_profil/'.$user['foto'])):?>
-                            <img src="/tugas-app/uploads/foto_profil/<?=$user['foto']?>" id="pv">
+                        <?php
+                        // ✅ FIX: hapus file_exists, langsung cek nama foto
+                        if ($user['foto']):?>
+                            <img src="<?= BASE_URL ?>/uploads/foto_profil/<?= htmlspecialchars($user['foto']) ?>" id="pv">
                         <?php else:?>
                             <div class="f-avatar" id="pv">👑</div>
                         <?php endif;?>

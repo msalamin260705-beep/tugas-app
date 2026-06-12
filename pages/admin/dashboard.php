@@ -120,9 +120,12 @@ $info_terbaru = mysqli_query($conn, "
                 ?>
                 <div style="border-bottom:1px solid #f5f5f5;padding:12px 0">
                     <?php if ($tipe === 'poster'): ?>
-                        <?php if ($poster && file_exists('../../uploads/poster/' . $poster)): ?>
+                        <?php
+                        // ✅ FIX: hapus file_exists, langsung cek nama poster
+                        if ($poster):?>
                             <div style="position:relative;border-radius:8px;overflow:hidden;margin-bottom:6px">
-                                <img src="/tugas-app/uploads/poster/<?= htmlspecialchars($poster) ?>"
+                                <!-- ✅ FIX: pakai BASE_URL -->
+                                <img src="<?= BASE_URL ?>/uploads/poster/<?= htmlspecialchars($poster) ?>"
                                      style="width:100%;max-height:180px;object-fit:cover;display:block">
                                 <div style="position:absolute;bottom:0;left:0;right:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,0.75));color:white">
                                     <strong style="font-size:13px"><?= htmlspecialchars($row['judul']) ?></strong>

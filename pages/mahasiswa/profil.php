@@ -7,7 +7,6 @@ require_auth('mahasiswa');
 $mhs_id  = $_SESSION['user_id'];
 $success = $error = "";
 
-// Ambil data user
 $user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE id=$mhs_id"));
 
 if (isset($_POST['update'])) {
@@ -15,12 +14,10 @@ if (isset($_POST['update'])) {
     $email = mysqli_real_escape_string($conn, trim($_POST['email']));
     $nim   = mysqli_real_escape_string($conn, trim($_POST['nim']));
 
-    // Cek email tidak bentrok dengan user lain
     $cek = mysqli_query($conn, "SELECT id FROM users WHERE email='$email' AND id != $mhs_id");
     if (mysqli_num_rows($cek) > 0) {
         $error = "Email sudah dipakai user lain!";
     } else {
-        // Upload foto profil jika ada
         $foto_baru = $user['foto'];
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] === 0) {
             $file    = $_FILES['foto'];
@@ -32,12 +29,12 @@ if (isset($_POST['update'])) {
                 $error = "Ukuran foto maksimal 2MB!";
             } else {
                 $foto_baru = 'foto_' . $mhs_id . '_' . time() . '.' . $ext;
-                move_uploaded_file($file['tmp_name'], '../../uploads/foto_profil/' . $foto_baru);
+                // ✅ FIX: pakai BASE_PATH untuk upload
+                move_uploaded_file($file['tmp_name'], BASE_PATH . '/uploads/foto_profil/' . $foto_baru);
             }
         }
 
         if (!$error) {
-            // Update password jika diisi
             $pass_sql = "";
             if (!empty($_POST['password_baru'])) {
                 if (strlen($_POST['password_baru']) < 6) {
@@ -122,8 +119,12 @@ if (isset($_POST['update'])) {
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
                     <div class="foto-area">
-                        <?php if ($user['foto'] && file_exists('../../uploads/foto_profil/' . $user['foto'])): ?>
-                            <img src="/tugas-app/uploads/foto_profil/<?= $user['foto'] ?>" id="preview_foto" alt="Foto Profil">
+                        <?php
+                        // ✅ FIX: tidak pakai file_exists, langsung tampilkan jika ada nama foto
+                        if ($user['foto']):
+                        ?>
+                            <img src="<?= BASE_URL ?>/uploads/foto_profil/<?= htmlspecialchars($user['foto']) ?>"
+                                 id="preview_foto" alt="Foto Profil">
                         <?php else: ?>
                             <div class="foto-avatar" id="preview_avatar">👤</div>
                         <?php endif; ?>
@@ -169,10 +170,8 @@ function previewFoto(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Cek apakah ada img atau div avatar
             let preview = document.getElementById('preview_foto');
             if (!preview) {
-                // Ganti div avatar dengan img
                 const avatar = document.getElementById('preview_avatar');
                 const img = document.createElement('img');
                 img.id = 'preview_foto';

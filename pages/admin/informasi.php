@@ -27,7 +27,8 @@ if (isset($_POST['tambah'])) {
         $ext=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));
         if (in_array($ext,['jpg','jpeg','png']) && $file['size']<=5*1024*1024) {
             $poster='poster_'.time().'.'.$ext;
-            move_uploaded_file($file['tmp_name'],'../../uploads/poster/'.$poster);
+            // ✅ FIX: pakai BASE_PATH
+            move_uploaded_file($file['tmp_name'], BASE_PATH . '/uploads/poster/' . $poster);
         } else { $error="Format JPG/PNG maks 5MB!"; }
     }
 
@@ -57,7 +58,8 @@ if (isset($_POST['simpan_edit'])) {
         $ext=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));
         if (in_array($ext,['jpg','jpeg','png']) && $file['size']<=5*1024*1024) {
             $pname='poster_'.time().'.'.$ext;
-            move_uploaded_file($file['tmp_name'],'../../uploads/poster/'.$pname);
+            // ✅ FIX: pakai BASE_PATH
+            move_uploaded_file($file['tmp_name'], BASE_PATH . '/uploads/poster/' . $pname);
             $poster_sql=", poster='$pname'";
         }
     }
@@ -74,7 +76,10 @@ if (isset($_GET['hapus'])) {
 }
 
 // Buat folder poster kalau belum ada
-if (!file_exists('../../uploads/poster/')) mkdir('../../uploads/poster/', 0755, true);
+// ✅ FIX: pakai BASE_PATH
+if (!file_exists(BASE_PATH . '/uploads/poster/')) {
+    mkdir(BASE_PATH . '/uploads/poster/', 0755, true);
+}
 
 $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi i JOIN users u ON i.admin_id=u.id ORDER BY i.created_at DESC");
 ?>
@@ -106,57 +111,29 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
         .alert{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;}
         .alert-success{background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;}
         .alert-error{background:#ffebee;color:#c62828;border:1px solid #ffcdd2;}
-
-        /* Toggle tipe */
         .tipe-toggle{display:flex;gap:8px;margin-bottom:14px;}
         .tipe-btn{flex:1;padding:10px;border:2px solid #e0e0e0;border-radius:8px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;color:#888;transition:0.2s;background:white;}
         .tipe-btn.aktif{border-color:#784212;background:#784212;color:white;}
-
-        /* Kartu info */
         .info-card{border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-
-        /* Poster */
         .poster-wrap{position:relative;}
         .poster-wrap img{width:100%;max-height:300px;object-fit:cover;display:block;}
-        .poster-overlay{
-            position:absolute;bottom:0;left:0;right:0;
-            padding:20px;
-            background:linear-gradient(transparent,rgba(0,0,0,0.8));
-            color:white;
-        }
+        .poster-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.8));color:white;}
         .poster-overlay h4{font-size:18px;margin-bottom:4px;}
         .poster-overlay p{font-size:12px;opacity:0.8;}
-
-        /* Kartu poster generated (tanpa gambar) */
-        .poster-generated{
-            padding:40px 30px;
-            text-align:center;
-            color:white;
-            min-height:200px;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-        }
+        .poster-generated{padding:40px 30px;text-align:center;color:white;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
         .poster-generated .icon{font-size:48px;margin-bottom:12px;}
         .poster-generated h4{font-size:22px;font-weight:800;margin-bottom:10px;line-height:1.3;}
         .poster-generated p{font-size:14px;opacity:0.85;line-height:1.6;max-width:400px;}
         .poster-generated .tanggal{margin-top:14px;font-size:12px;opacity:0.6;border-top:1px solid rgba(255,255,255,0.2);padding-top:12px;}
-
-        /* Teks biasa */
         .info-teks{padding:18px 20px;background:white;border-left:4px solid #784212;}
         .info-teks h4{font-size:15px;color:#1e3a5f;margin-bottom:6px;}
         .info-teks p{font-size:13px;color:#555;line-height:1.6;}
-
-        .info-footer{
-            background:white;padding:10px 16px;
-            display:flex;justify-content:space-between;align-items:center;
-            border-top:1px solid #f0f0f0;
-        }
+        .info-footer{background:white;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f0f0f0;}
         .info-footer span{font-size:11px;color:#aaa;}
-
         .file-drop{border:2px dashed #c0a060;border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:#fffbf0;transition:0.2s;}
         .file-drop:hover{border-color:#784212;background:#fff5e0;}
         .file-drop input{display:none;}
         .file-drop p{font-size:13px;color:#888;}
-
         .divider{border:none;border-top:1px solid #f0f0f0;margin:16px 0;}
     </style>
 </head>
@@ -172,7 +149,6 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
         <?php if($error):?><div class="alert alert-error">⚠️ <?=$error?></div><?php endif;?>
 
         <div class="row-2">
-            <!-- Form tambah / edit -->
             <div class="card">
                 <div class="card-header" style="background:#784212">
                     <h3><?= $edit_info ? '✏️ Edit Informasi' : '📝 Buat Informasi' ?></h3>
@@ -185,7 +161,6 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
                             <input type="hidden" name="edit_id" value="<?= $edit_info['id'] ?>">
                         <?php endif; ?>
 
-                        <!-- Toggle tipe -->
                         <div class="form-group">
                             <label>Jenis Informasi</label>
                             <div class="tipe-toggle">
@@ -210,7 +185,6 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
                             <textarea name="isi" placeholder="Tulis isi pengumuman..."><?= htmlspecialchars($edit_info['isi'] ?? '') ?></textarea>
                         </div>
 
-                        <!-- Opsi poster -->
                         <div id="opsi_poster" style="display:<?= ($edit_info && $edit_info['tipe']=='poster') ? 'block' : 'none' ?>">
                             <div class="form-group">
                                 <label>Warna Background Poster</label>
@@ -238,8 +212,10 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
                                            accept=".jpg,.jpeg,.png"
                                            onchange="previewPoster(this)">
                                     <div id="poster_preview_wrap">
-                                        <?php if ($edit_info && $edit_info['poster'] && file_exists('../../uploads/poster/'.$edit_info['poster'])): ?>
-                                            <img src="/tugas-app/uploads/poster/<?=$edit_info['poster']?>"
+                                        <?php
+                                        // ✅ FIX: hapus file_exists, langsung tampilkan kalau ada nama poster
+                                        if ($edit_info && $edit_info['poster']):?>
+                                            <img src="<?= BASE_URL ?>/uploads/poster/<?=$edit_info['poster']?>"
                                                  style="max-height:120px;border-radius:8px;margin-bottom:8px">
                                         <?php else: ?>
                                             <p>🖼️ Klik untuk upload gambar<br><small>JPG/PNG maks 5MB</small></p>
@@ -266,7 +242,6 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
                 </div>
             </div>
 
-            <!-- Daftar informasi -->
             <div>
                 <?php
                 $ada=false;
@@ -277,9 +252,12 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
                 ?>
                 <div class="info-card">
                     <?php if ($tipe=='poster'): ?>
-                        <?php if ($row['poster'] && file_exists('../../uploads/poster/'.$row['poster'])): ?>
+                        <?php
+                        // ✅ FIX: hapus file_exists, langsung cek nama poster
+                        if ($row['poster']):?>
                             <div class="poster-wrap">
-                                <img src="/tugas-app/uploads/poster/<?=$row['poster']?>" alt="Poster">
+                                <!-- ✅ FIX: pakai BASE_URL -->
+                                <img src="<?= BASE_URL ?>/uploads/poster/<?=$row['poster']?>" alt="Poster">
                                 <div class="poster-overlay">
                                     <h4><?=htmlspecialchars($row['judul'])?></h4>
                                     <p><?=htmlspecialchars(substr($row['isi'],0,100))?>...</p>
@@ -290,9 +268,7 @@ $info_list = mysqli_query($conn,"SELECT i.*,u.nama AS nama_admin FROM informasi 
                                 <div class="icon">📢</div>
                                 <h4><?=htmlspecialchars($row['judul'])?></h4>
                                 <p><?=nl2br(htmlspecialchars($row['isi']))?></p>
-                                <div class="tanggal">
-                                    📅 <?=date('d F Y',strtotime($row['created_at']))?>
-                                </div>
+                                <div class="tanggal">📅 <?=date('d F Y',strtotime($row['created_at']))?></div>
                             </div>
                         <?php endif; ?>
                     <?php else: ?>

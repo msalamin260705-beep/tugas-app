@@ -8,15 +8,12 @@ $dosen_id = $_SESSION['user_id'];
 
 $total_kelas = mysqli_fetch_assoc(mysqli_query($conn,
     "SELECT COUNT(*) as total FROM kelas WHERE dosen_id=$dosen_id"))['total'];
-
 $total_tugas = mysqli_fetch_assoc(mysqli_query($conn,
     "SELECT COUNT(*) as total FROM tugas WHERE dosen_id=$dosen_id"))['total'];
-
 $total_submit = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT COUNT(*) as total FROM submissions s
     JOIN tugas t ON s.tugas_id = t.id
     WHERE t.dosen_id = $dosen_id"))['total'];
-
 $belum_dinilai = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT COUNT(*) as total FROM submissions s
     JOIN tugas t ON s.tugas_id = t.id
@@ -25,8 +22,7 @@ $belum_dinilai = mysqli_fetch_assoc(mysqli_query($conn, "
 $tugas_terbaru = mysqli_query($conn, "
     SELECT t.*, k.nama_kelas,
         (SELECT COUNT(*) FROM submissions s WHERE s.tugas_id=t.id) as jml_submit
-    FROM tugas t
-    JOIN kelas k ON t.kelas_id = k.id
+    FROM tugas t JOIN kelas k ON t.kelas_id = k.id
     WHERE t.dosen_id = $dosen_id
     ORDER BY t.created_at DESC LIMIT 5
 ");
@@ -40,11 +36,9 @@ $perlu_dinilai = mysqli_query($conn, "
     ORDER BY s.submitted_at DESC LIMIT 6
 ");
 
-// Informasi dari admin — ambil semua kolom
 $info = mysqli_query($conn, "
     SELECT judul, isi, created_at, poster, warna_bg, tipe
-    FROM informasi
-    ORDER BY created_at DESC LIMIT 5
+    FROM informasi ORDER BY created_at DESC LIMIT 5
 ");
 ?>
 <!DOCTYPE html>
@@ -82,32 +76,18 @@ $info = mysqli_query($conn, "
         .shortcut-card:hover { transform:translateY(-3px); }
         .shortcut-card .icon { font-size:28px; margin-bottom:8px; }
         .shortcut-card p { font-size:13px; font-weight:600; color:#333; }
-
-        /* Info teks */
         .info-item { border-bottom:1px solid #f5f5f5; padding:14px 0; }
         .info-item:first-child { padding-top:0; }
         .info-item:last-child { border-bottom:none; padding-bottom:0; }
         .info-item h4 { font-size:13px; color:#333; font-weight:600; }
         .info-item .isi { font-size:13px; color:#555; margin-top:5px; line-height:1.6; }
         .info-item .tgl { font-size:11px; color:#aaa; margin-top:5px; }
-
-        /* Poster dengan gambar */
         .poster-img-wrap { position:relative; border-radius:10px; overflow:hidden; margin-bottom:8px; }
-        .poster-img-wrap img { width:100%; max-height:220px; object-fit:cover; display:block; }
-        .poster-img-overlay {
-            position:absolute; bottom:0; left:0; right:0;
-            padding:16px;
-            background:linear-gradient(transparent, rgba(0,0,0,0.75));
-            color:white;
-        }
-        .poster-img-overlay h4 { font-size:15px; font-weight:700; }
-        .poster-img-overlay p  { font-size:12px; opacity:0.85; margin-top:3px; }
-
-        /* Poster generated */
-        .poster-gen {
-            border-radius:10px; padding:28px 20px;
-            text-align:center; color:white; margin-bottom:8px;
-        }
+        .poster-img-wrap img { width:100%; max-height:300px; display:block; object-fit:cover; }
+        .poster-img-overlay { position:absolute; bottom:0; left:0; right:0; padding:16px; background:linear-gradient(transparent, rgba(0,0,0,0.75)); color:white; }
+        .poster-img-overlay h4 { font-size:15px; font-weight:700; color:#ffffff; }
+        .poster-img-overlay p  { font-size:12px; color:#ffffff; opacity:0.9; margin-top:3px; }
+        .poster-gen { border-radius:10px; padding:28px 20px; text-align:center; color:white; margin-bottom:8px; }
         .poster-gen .pg-icon { font-size:36px; margin-bottom:10px; }
         .poster-gen h4 { font-size:17px; font-weight:800; margin-bottom:8px; line-height:1.3; }
         .poster-gen p  { font-size:13px; opacity:0.88; line-height:1.6; }
@@ -125,58 +105,30 @@ $info = mysqli_query($conn, "
     </div>
 
     <div class="page-body">
-
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#e8f0fe">📚</div>
-                <div><h3><?= $total_kelas ?></h3><p>Kelas Diampu</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#fff8e1">📝</div>
-                <div><h3><?= $total_tugas ?></h3><p>Tugas Dibuat</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#e8f5e9">📬</div>
-                <div><h3><?= $total_submit ?></h3><p>Total Submission</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#ffebee">⏳</div>
-                <div><h3><?= $belum_dinilai ?></h3><p>Belum Dinilai</p></div>
-            </div>
+            <div class="stat-card"><div class="stat-icon" style="background:#e8f0fe">📚</div><div><h3><?= $total_kelas ?></h3><p>Kelas Diampu</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#fff8e1">📝</div><div><h3><?= $total_tugas ?></h3><p>Tugas Dibuat</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#e8f5e9">📬</div><div><h3><?= $total_submit ?></h3><p>Total Submission</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#ffebee">⏳</div><div><h3><?= $belum_dinilai ?></h3><p>Belum Dinilai</p></div></div>
         </div>
 
         <div class="shortcut-grid">
-            <a href="tugas.php" class="shortcut-card" style="border-color:#1a5276">
-                <div class="icon">📝</div><p>Buat Tugas Baru</p>
-            </a>
-            <a href="submission.php" class="shortcut-card" style="border-color:#784212">
-                <div class="icon">📬</div><p>Nilai Submission</p>
-            </a>
-            <a href="profil.php" class="shortcut-card" style="border-color:#145a32">
-                <div class="icon">👤</div><p>Edit Profil</p>
-            </a>
+            <a href="tugas.php" class="shortcut-card" style="border-color:#1a5276"><div class="icon">📝</div><p>Buat Tugas Baru</p></a>
+            <a href="submission.php" class="shortcut-card" style="border-color:#784212"><div class="icon">📬</div><p>Nilai Submission</p></a>
+            <a href="profil.php" class="shortcut-card" style="border-color:#145a32"><div class="icon">👤</div><p>Edit Profil</p></a>
         </div>
 
         <div class="row-2">
             <div class="card">
-                <div class="card-header">
-                    <h3>📝 Tugas Terbaru</h3>
-                    <a href="tugas.php">Lihat semua →</a>
-                </div>
+                <div class="card-header"><h3>📝 Tugas Terbaru</h3><a href="tugas.php">Lihat semua →</a></div>
                 <table>
                     <thead><tr><th>Judul</th><th>Deadline</th><th>Submit</th></tr></thead>
                     <tbody>
                     <?php while ($t = mysqli_fetch_assoc($tugas_terbaru)):
                         $lewat = strtotime($t['deadline']) < time(); ?>
                     <tr>
-                        <td>
-                            <strong><?= htmlspecialchars($t['judul']) ?></strong><br>
-                            <small style="color:#aaa"><?= htmlspecialchars($t['nama_kelas']) ?></small>
-                        </td>
-                        <td class="<?= $lewat?'deadline-near':'' ?>">
-                            <?= date('d M Y', strtotime($t['deadline'])) ?>
-                            <?= $lewat ? '<br><small>Lewat</small>' : '' ?>
-                        </td>
+                        <td><strong><?= htmlspecialchars($t['judul']) ?></strong><br><small style="color:#aaa"><?= htmlspecialchars($t['nama_kelas']) ?></small></td>
+                        <td class="<?= $lewat?'deadline-near':'' ?>"><?= date('d M Y', strtotime($t['deadline'])) ?><?= $lewat ? '<br><small>Lewat</small>' : '' ?></td>
                         <td><span class="badge badge-ok"><?= $t['jml_submit'] ?> file</span></td>
                     </tr>
                     <?php endwhile; ?>
@@ -188,10 +140,7 @@ $info = mysqli_query($conn, "
             </div>
 
             <div class="card">
-                <div class="card-header">
-                    <h3>⏳ Perlu Dinilai</h3>
-                    <a href="submission.php">Nilai semua →</a>
-                </div>
+                <div class="card-header"><h3>⏳ Perlu Dinilai</h3><a href="submission.php">Nilai semua →</a></div>
                 <table>
                     <thead><tr><th>Mahasiswa</th><th>Tugas</th><th>Waktu</th></tr></thead>
                     <tbody>
@@ -225,11 +174,11 @@ $info = mysqli_query($conn, "
                 <div class="info-item">
                     <?php if ($tipe === 'poster'): ?>
                         <?php
-                        $poster_path = '../../uploads/poster/' . $poster;
-                        if ($poster && file_exists($poster_path)):
-                        ?>
+                        // ✅ FIX: hapus file_exists, langsung cek nama poster
+                        if ($poster):?>
                             <div class="poster-img-wrap">
-                                <img src="/tugas-app/uploads/poster/<?= htmlspecialchars($poster) ?>" alt="Poster">
+                                <!-- ✅ FIX: pakai BASE_URL -->
+                                <img src="<?= BASE_URL ?>/uploads/poster/<?= htmlspecialchars($poster) ?>" alt="Poster">
                                 <div class="poster-img-overlay">
                                     <h4><?= htmlspecialchars($i['judul']) ?></h4>
                                     <?php if ($i['isi']): ?>
@@ -240,9 +189,9 @@ $info = mysqli_query($conn, "
                         <?php else: ?>
                             <div class="poster-gen" style="background:<?= htmlspecialchars($warna) ?>">
                                 <div class="pg-icon">📢</div>
-                                <h3 style="color:#ffffff;"><?= htmlspecialchars($i['judul']) ?></h3>
+                                <h4><?= htmlspecialchars($i['judul']) ?></h4>
                                 <?php if ($i['isi']): ?>
-                                <p style="color:#ffffff;"><?= nl2br(htmlspecialchars($i['isi'])) ?></p>
+                                <p><?= nl2br(htmlspecialchars($i['isi'])) ?></p>
                                 <?php endif; ?>
                                 <div class="pg-tgl">📅 <?= date('d F Y', strtotime($i['created_at'])) ?></div>
                             </div>
@@ -259,7 +208,6 @@ $info = mysqli_query($conn, "
                 <?php endif; ?>
             </div>
         </div>
-
     </div>
 </div>
 </body>

@@ -9,7 +9,6 @@ $success  = $error = "";
 
 $user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE id=$dosen_id"));
 
-// Ambil kelas yang diampu
 $kelas_diampu = mysqli_query($conn, "
     SELECT k.*, COUNT(mk.mahasiswa_id) AS jml_mhs
     FROM kelas k
@@ -40,7 +39,8 @@ if (isset($_POST['update'])) {
                 $error = "Ukuran foto maks 2MB!";
             } else {
                 $foto_baru = 'foto_' . $dosen_id . '_' . time() . '.' . $ext;
-                move_uploaded_file($file['tmp_name'], '../../uploads/foto_profil/' . $foto_baru);
+                // ✅ FIX: pakai BASE_PATH
+                move_uploaded_file($file['tmp_name'], BASE_PATH . '/uploads/foto_profil/' . $foto_baru);
             }
         }
 
@@ -98,25 +98,10 @@ if (isset($_POST['update'])) {
             width:90px; height:90px; border-radius:50%;
             object-fit:cover; border:3px solid #1a5276;
         }
-        .avatar {
-            background:#1a5276; color:white;
-            display:flex; align-items:center; justify-content:center;
-            font-size:36px; margin:0 auto;
-        }
-        .foto-area label-upload {
-            display:inline-block; margin-top:8px; padding:5px 14px;
-            background:#e8f0fe; color:#1a5276; border-radius:20px;
-            font-size:12px; font-weight:600; cursor:pointer;
-        }
+        .avatar { background:#1a5276; color:white; display:flex; align-items:center; justify-content:center; font-size:36px; margin:0 auto; }
         .foto-area input { display:none; }
         .divider { border:none; border-top:1px solid #f0f0f0; margin:18px 0; }
-
-        /* Kelas diampu */
-        .kelas-item {
-            padding:12px 16px; border-radius:10px;
-            border:1px solid #e0e0e0; margin-bottom:10px;
-            display:flex; justify-content:space-between; align-items:center;
-        }
+        .kelas-item { padding:12px 16px; border-radius:10px; border:1px solid #e0e0e0; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
         .kelas-item h4 { font-size:14px; color:#1e3a5f; }
         .kelas-item p  { font-size:12px; color:#888; margin-top:3px; }
         .badge { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
@@ -133,7 +118,6 @@ if (isset($_POST['update'])) {
     <div class="topbar"><h1>👤 Profil Saya</h1></div>
 
     <div class="page-body">
-        <!-- Form edit profil -->
         <div>
             <?php if ($success): ?><div class="alert alert-success">✅ <?= $success ?></div><?php endif; ?>
             <?php if ($error):   ?><div class="alert alert-error">⚠️ <?= $error ?></div><?php endif; ?>
@@ -144,8 +128,11 @@ if (isset($_POST['update'])) {
                     <form method="POST" enctype="multipart/form-data">
 
                         <div class="foto-area">
-                            <?php if ($user['foto'] && file_exists('../../uploads/foto_profil/'.$user['foto'])): ?>
-                                <img src="/tugas-app/uploads/foto_profil/<?= $user['foto'] ?>" id="preview_foto">
+                            <?php
+                            // ✅ FIX: hapus file_exists, langsung cek nama foto
+                            if ($user['foto']):
+                            ?>
+                                <img src="<?= BASE_URL ?>/uploads/foto_profil/<?= htmlspecialchars($user['foto']) ?>" id="preview_foto">
                             <?php else: ?>
                                 <div class="avatar" id="preview_avatar">👨‍🏫</div>
                             <?php endif; ?>
@@ -185,7 +172,6 @@ if (isset($_POST['update'])) {
             </div>
         </div>
 
-        <!-- Kelas yang diampu -->
         <div class="card">
             <div class="card-header" style="background:#145a32"><h3>📚 Kelas yang Saya Ampu</h3></div>
             <div class="card-body">
